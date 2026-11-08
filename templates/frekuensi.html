@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Peta Frekuensi — {{ app_name }}{% endblock %}
+{% block topbar_title %}Peta Frekuensi{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="page-title">Peta Frekuensi</h1>
+  <p class="page-sub">Analisis penggunaan frekuensi — deteksi tabrakan atau interferensi</p>
+</div>
+
+<div class="card overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-100 bg-amber-50 flex items-center gap-3">
+    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-sm text-amber-700">Frekuensi yang dipakai lebih dari 1 link berpotensi interferensi — cek channel width dan jarak antar lokasi.</p>
+  </div>
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th class="th">Frekuensi (MHz)</th>
+        <th class="th">Band</th>
+        <th class="th">Channel Width</th>
+        <th class="th">Jumlah Link</th>
+        <th class="th">Daftar Link</th>
+        <th class="th">Risiko</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="hover:bg-gray-50 transition {% if r.jml > 1 %}bg-orange-50/50{% endif %}">
+        <td class="td font-mono font-bold text-gray-800">{{ r.frekuensi }}</td>
+        <td class="td text-gray-500">{{ r.band or '—' }}</td>
+        <td class="td text-gray-500">{{ r.channel_width or '—' }}</td>
+        <td class="td">
+          {% if r.jml > 1 %}
+          <span class="badge badge-orange">{{ r.jml }} link</span>
+          {% else %}
+          <span class="badge badge-green">{{ r.jml }} link</span>
+          {% endif %}
+        </td>
+        <td class="td text-sm text-gray-600">
+          {% for link in r.links.split('|') %}
+          <span class="inline-block bg-gray-100 rounded-lg px-2 py-0.5 text-xs mr-1 mb-1">{{ link }}</span>
+          {% endfor %}
+        </td>
+        <td class="td">
+          {% if r.jml > 2 %}
+          <span class="badge badge-red">Tinggi</span>
+          {% elif r.jml > 1 %}
+          <span class="badge badge-orange">Perlu Cek</span>
+          {% else %}
+          <span class="badge badge-green">Aman</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="td text-center text-gray-400 py-12">
+          Belum ada data frekuensi. <a href="/radio/tambah" class="text-violet-600 hover:underline">Tambah radio link</a> terlebih dahulu.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

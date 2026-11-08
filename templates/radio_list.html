@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Radio Links — {{ app_name }}{% endblock %}
+{% block topbar_title %}Daftar Radio Link{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-start justify-between">
+  <div>
+    <h1 class="page-title">Daftar Radio Link</h1>
+    <p class="page-sub">{{ rows|length }} link ditemukan</p>
+  </div>
+  <a href="/radio/tambah" class="btn-primary px-5 py-2.5">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Tambah Link
+  </a>
+</div>
+
+<!-- Filter -->
+<form method="get" action="/radio" class="card p-4 mb-6 flex gap-3 flex-wrap items-end">
+  <div class="flex-1 min-w-48">
+    <label class="form-label">Cari</label>
+    <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="Nama link, lokasi, IP, SSID...">
+  </div>
+  <div>
+    <label class="form-label">Status</label>
+    <select name="status" class="form-input">
+      <option value="">Semua Status</option>
+      {% for s in status_list %}
+      <option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="form-label">Vendor</label>
+    <select name="vendor" class="form-input">
+      <option value="">Semua Vendor</option>
+      {% for v in vendor_list %}
+      <option value="{{ v }}" {% if vendor==v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="form-label">Band</label>
+    <select name="band" class="form-input">
+      <option value="">Semua Band</option>
+      {% for b in band_list %}
+      <option value="{{ b }}" {% if band==b %}selected{% endif %}>{{ b }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn-primary px-5 py-2.5">Filter</button>
+  {% if q or status or vendor or band %}
+  <a href="/radio" class="btn-ghost px-5 py-2.5">Reset</a>
+  {% endif %}
+</form>
+
+<!-- Table -->
+<div class="card overflow-hidden">
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th class="th">#</th>
+        <th class="th">Nama Link</th>
+        <th class="th">Lokasi</th>
+        <th class="th">Vendor</th>
+        <th class="th">Band / Frekuensi</th>
+        <th class="th">Ch. Width</th>
+        <th class="th">IP Mgmt</th>
+        <th class="th">Status</th>
+        <th class="th">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="hover:bg-gray-50 transition">
+        <td class="td text-gray-400 text-xs">{{ r.id }}</td>
+        <td class="td">
+          <a href="/radio/{{ r.id }}/detail" class="font-semibold text-gray-800 hover:text-violet-600">{{ r.nama_link }}</a>
+          {% if r.ssid %}<p class="text-xs text-gray-400 font-mono mt-0.5">{{ r.ssid }}</p>{% endif %}
+        </td>
+        <td class="td text-gray-500 text-xs">
+          {{ r.lokasi_a or '—' }}
+          {% if r.lokasi_b %}<br><span class="text-gray-400">→ {{ r.lokasi_b }}</span>{% endif %}
+        </td>
+        <td class="td">
+          {% if r.vendor %}
+          <span class="badge badge-purple">{{ r.vendor }}</span>
+          {% else %}<span class="text-gray-400">—</span>{% endif %}
+        </td>
+        <td class="td font-mono text-xs">
+          <span class="text-gray-500">{{ r.band or '—' }}</span>
+          {% if r.frekuensi %}<br><span class="text-gray-800 font-semibold">{{ r.frekuensi }}</span>{% endif %}
+        </td>
+        <td class="td text-xs text-gray-500">{{ r.channel_width or '—' }}</td>
+        <td class="td font-mono text-xs text-blue-600">{{ r.ip_mgmt or '—' }}</td>
+        <td class="td">
+          {% if r.status == 'Aktif' %}<span class="badge badge-green">Aktif</span>
+          {% elif r.status == 'Gangguan' %}<span class="badge badge-red">Gangguan</span>
+          {% elif r.status == 'Maintenance' %}<span class="badge badge-orange">Maintenance</span>
+          {% else %}<span class="badge badge-gray">{{ r.status }}</span>{% endif %}
+        </td>
+        <td class="td">
+          <div class="flex items-center gap-2">
+            <a href="/radio/{{ r.id }}/edit" class="btn-ghost px-3 py-1.5 text-xs">Edit</a>
+            <form method="post" action="/radio/{{ r.id }}/hapus" onsubmit="return confirm('Hapus link {{ r.nama_link }}?')">
+              <button type="submit" class="btn-danger px-3 py-1.5 text-xs">Hapus</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="9" class="td text-center text-gray-400 py-12">
+          <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+          </svg>
+          Tidak ada data radio link
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

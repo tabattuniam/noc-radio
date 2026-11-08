@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Sinyal — {{ link.nama_link }}{% endblock %}
+{% block topbar_title %}Riwayat Sinyal{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-4">
+  <a href="/monitoring" class="btn-ghost px-4 py-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Kembali
+  </a>
+  <div>
+    <h1 class="page-title">{{ link.nama_link }}</h1>
+    <p class="page-sub">100 riwayat poll terakhir</p>
+  </div>
+</div>
+
+<div class="card overflow-hidden">
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th class="th">Waktu Poll</th>
+        <th class="th">Sinyal RX</th>
+        <th class="th">Sinyal TX</th>
+        <th class="th">CCQ</th>
+        <th class="th">Status</th>
+        <th class="th">Info</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in history %}
+      <tr class="hover:bg-gray-50 transition {% if h.status == 'kritis' or h.status == 'offline' %}bg-red-50/30{% endif %}">
+        <td class="td text-xs text-gray-500">{{ ts(h.polled_at) }}</td>
+        <td class="td text-center font-mono font-bold text-sm
+          {% if h.sinyal_rx and h.sinyal_rx > -70 %}text-emerald-600
+          {% elif h.sinyal_rx and h.sinyal_rx > -80 %}text-orange-500
+          {% elif h.sinyal_rx %}text-red-600
+          {% else %}text-gray-300{% endif %}">
+          {% if h.sinyal_rx is not none %}{{ h.sinyal_rx }} dBm{% else %}—{% endif %}
+        </td>
+        <td class="td text-center font-mono text-sm text-gray-600">
+          {% if h.sinyal_tx is not none %}{{ h.sinyal_tx }} dBm{% else %}—{% endif %}
+        </td>
+        <td class="td text-center text-sm
+          {% if h.ccq and h.ccq > 80 %}text-emerald-600
+          {% elif h.ccq and h.ccq > 60 %}text-orange-500
+          {% elif h.ccq %}text-red-600
+          {% else %}text-gray-300{% endif %}">
+          {% if h.ccq is not none %}{{ h.ccq }}%{% else %}—{% endif %}
+        </td>
+        <td class="td">
+          {% if h.status == 'baik' %}<span class="badge badge-green">Baik</span>
+          {% elif h.status == 'lemah' %}<span class="badge badge-orange">Lemah</span>
+          {% elif h.status == 'kritis' %}<span class="badge badge-red">Kritis</span>
+          {% elif h.status == 'offline' %}<span class="badge badge-red">Offline</span>
+          {% else %}<span class="badge badge-gray">{{ h.status }}</span>{% endif %}
+        </td>
+        <td class="td text-xs text-gray-400">{{ h.raw_info or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="td text-center text-gray-400 py-8">Belum ada riwayat poll</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

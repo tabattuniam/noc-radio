@@ -1,0 +1,7 @@
+app:
+  name: NOC Radio Manager
+  port: 8110
+  secret_key: nocradio_s3cr3t_2026_xk9p
+superadmin:
+  username: superadmin
+  password: admin@vpn2026

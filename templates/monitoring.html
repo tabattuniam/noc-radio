@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Monitoring — {{ app_name }}{% endblock %}
+{% block topbar_title %}Monitoring Real-time{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-start justify-between">
+  <div>
+    <h1 class="page-title">Monitoring Real-time</h1>
+    <p class="page-sub">Status sinyal terkini via SNMP — diperbarui tiap 5 menit</p>
+  </div>
+  <div class="flex gap-3">
+    <form method="post" action="/monitoring/poll-now">
+      <button type="submit" class="btn-primary px-5 py-2.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Poll Sekarang
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Summary bar -->
+<div class="grid grid-cols-4 gap-4 mb-6">
+  <div class="card p-4 border-l-4 border-emerald-400">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Sinyal Baik</p>
+    <p class="text-2xl font-bold text-emerald-600">{{ counts.baik }}</p>
+    <p class="text-xs text-gray-400">> -70 dBm</p>
+  </div>
+  <div class="card p-4 border-l-4 border-orange-400">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Sinyal Lemah</p>
+    <p class="text-2xl font-bold text-orange-500">{{ counts.lemah }}</p>
+    <p class="text-xs text-gray-400">-70 s/d -80 dBm</p>
+  </div>
+  <div class="card p-4 border-l-4 border-red-500">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Kritis / Offline</p>
+    <p class="text-2xl font-bold text-red-600">{{ counts.kritis + counts.offline }}</p>
+    <p class="text-xs text-gray-400">< -80 dBm atau tidak terjangkau</p>
+  </div>
+  <div class="card p-4 border-l-4 border-gray-300">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Belum Dipoll</p>
+    <p class="text-2xl font-bold text-gray-500">{{ counts.unknown }}</p>
+    <p class="text-xs text-gray-400">IP mgmt belum diisi atau baru</p>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card overflow-hidden">
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th class="th">Nama Link</th>
+        <th class="th">IP Mgmt</th>
+        <th class="th">Vendor</th>
+        <th class="th">Sinyal RX</th>
+        <th class="th">Sinyal TX</th>
+        <th class="th">CCQ</th>
+        <th class="th">Status Poll</th>
+        <th class="th">Terakhir Poll</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in links %}
+      <tr class="hover:bg-gray-50 transition
+        {% if r.poll_status == 'kritis' or r.poll_status == 'offline' %}bg-red-50/40{% endif %}
+        {% if r.poll_status == 'lemah' %}bg-orange-50/30{% endif %}">
+
+        <td class="td">
+          <a href="/radio/{{ r.id }}/detail" class="font-semibold text-gray-800 hover:text-violet-600">{{ r.nama_link }}</a>
+        </td>
+        <td class="td font-mono text-xs text-blue-600">{{ r.ip_mgmt or '—' }}</td>
+        <td class="td text-xs">
+          {% if r.vendor %}<span class="badge badge-purple">{{ r.vendor }}</span>{% else %}—{% endif %}
+        </td>
+
+        <td class="td text-center">
+          {% if r.poll_signal_rx is not none %}
+          <span class="font-mono font-bold text-sm
+            {% if r.poll_signal_rx > -70 %}text-emerald-600
+            {% elif r.poll_signal_rx > -80 %}text-orange-500
+            {% else %}text-red-600{% endif %}">
+            {{ r.poll_signal_rx }} dBm
+          </span>
+          {% else %}<span class="text-gray-300">—</span>{% endif %}
+        </td>
+
+        <td class="td text-center">
+          {% if r.poll_signal_tx is not none %}
+          <span class="font-mono text-sm text-gray-600">{{ r.poll_signal_tx }} dBm</span>
+          {% else %}<span class="text-gray-300">—</span>{% endif %}
+        </td>
+
+        <td class="td text-center">
+          {% if r.poll_ccq is not none %}
+          <span class="font-mono text-sm
+            {% if r.poll_ccq > 80 %}text-emerald-600
+            {% elif r.poll_ccq > 60 %}text-orange-500
+            {% else %}text-red-600{% endif %}">
+            {{ r.poll_ccq }}%
+          </span>
+          {% else %}<span class="text-gray-300">—</span>{% endif %}
+        </td>
+
+        <td class="td">
+          {% if r.poll_status == 'baik' %}<span class="badge badge-green">Baik</span>
+          {% elif r.poll_status == 'lemah' %}<span class="badge badge-orange">Lemah</span>
+          {% elif r.poll_status == 'kritis' %}<span class="badge badge-red">Kritis</span>
+          {% elif r.poll_status == 'offline' %}<span class="badge badge-red">Offline</span>
+          {% else %}<span class="badge badge-gray">Belum dipoll</span>{% endif %}
+        </td>
+
+        <td class="td text-xs text-gray-400">
+          {% if r.last_polled %}{{ ts(r.last_polled) }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="8" class="td text-center text-gray-400 py-12">
+          Belum ada radio link. <a href="/radio/tambah" class="text-violet-600 hover:underline">Tambah radio link</a> dengan IP management terlebih dahulu.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- SNMP config info -->
+<div class="mt-6 card p-5 bg-blue-50 border border-blue-100">
+  <p class="text-sm font-bold text-blue-700 mb-2">Cara Setup SNMP di Perangkat</p>
+  <div class="grid grid-cols-3 gap-4 text-xs text-blue-600">
+    <div>
+      <p class="font-semibold mb-1">MikroTik (RouterOS)</p>
+      <code class="block bg-white rounded p-2 text-gray-700">/snmp set enabled=yes<br>/snmp community add<br>  name=public read-access=yes</code>
+    </div>
+    <div>
+      <p class="font-semibold mb-1">Ubiquiti AirFiber</p>
+      <code class="block bg-white rounded p-2 text-gray-700">System → SNMP<br>Enable SNMP v2c<br>Community: public</code>
+    </div>
+    <div>
+      <p class="font-semibold mb-1">Mimosa</p>
+      <code class="block bg-white rounded p-2 text-gray-700">Management → SNMP<br>Enable v2c<br>Community: public</code>
+    </div>
+  </div>
+  <p class="text-xs text-blue-500 mt-3">Pastikan firewall mengizinkan UDP port 161 dari IP VPS ke perangkat radio. SNMP community default: <strong>public</strong> (bisa diubah per-link di halaman edit).</p>
+</div>
+
+<script>
+  // Auto-refresh halaman tiap 5 menit
+  setTimeout(() => location.reload(), 5 * 60 * 1000);
+</script>
+{% endblock %}

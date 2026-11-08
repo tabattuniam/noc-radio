@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — {{ app_name }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  body { font-family: 'Inter', sans-serif; }
+  .blob1 { position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(139,92,246,.25) 0%,transparent 70%); top:-100px; left:-100px; }
+  .blob2 { position:absolute; width:400px; height:400px; background:radial-gradient(circle,rgba(109,40,217,.2) 0%,transparent 70%); bottom:-80px; right:-80px; }
+  .glass { background:rgba(255,255,255,0.06); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.12); }
+</style>
+</head>
+<body style="background:linear-gradient(135deg,#1e1b4b 0%,#2e1065 60%,#1e1b4b 100%)" class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+
+  <div class="w-full max-w-sm relative z-10">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-violet-900">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-white">NOC Radio Manager</h1>
+      <p class="text-violet-400 text-sm mt-1">Manajemen Frekuensi Radio</p>
+    </div>
+
+    <div class="glass rounded-3xl p-8">
+      {% if error %}
+      <div class="bg-red-500/20 border border-red-500/30 text-red-300 text-sm px-4 py-3 rounded-xl mb-5 flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="/login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-violet-300 uppercase tracking-wider mb-1.5">Username</label>
+          <input type="text" name="username" required autofocus
+            class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+            placeholder="superadmin">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-violet-300 uppercase tracking-wider mb-1.5">Password</label>
+          <input type="password" name="password" required
+            class="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+            placeholder="••••••••">
+        </div>
+        <button type="submit"
+          class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3.5 rounded-xl transition mt-2 shadow-lg shadow-violet-900/50">
+          Masuk
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-violet-500/50 text-xs mt-6">Akses terbatas — hanya untuk tim NOC</p>
+  </div>
+</body>
+</html>

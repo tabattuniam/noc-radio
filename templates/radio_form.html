@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% set is_edit = row is not none %}
+{% block title %}{% if is_edit %}Edit{% else %}Tambah{% endif %} Radio Link — {{ app_name }}{% endblock %}
+{% block topbar_title %}{% if is_edit %}Edit{% else %}Tambah{% endif %} Radio Link{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-4">
+  <a href="/radio" class="btn-ghost px-4 py-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Kembali
+  </a>
+  <div>
+    <h1 class="page-title">{% if is_edit %}Edit Radio Link{% else %}Tambah Radio Link{% endif %}</h1>
+    <p class="page-sub">{% if is_edit %}{{ row.nama_link }}{% else %}Daftarkan link baru{% endif %}</p>
+  </div>
+</div>
+
+<form method="post" action="{% if is_edit %}/radio/{{ row.id }}/edit{% else %}/radio/tambah{% endif %}">
+<div class="grid grid-cols-3 gap-6">
+
+  <!-- Identitas Link -->
+  <div class="col-span-2 space-y-6">
+
+    <div class="card p-6">
+      <p class="text-sm font-bold text-gray-700 mb-5">Identitas Link</p>
+      <div class="grid grid-cols-2 gap-4">
+
+        <div class="col-span-2">
+          <label class="form-label">Nama Link <span class="text-red-400">*</span></label>
+          <input type="text" name="nama_link" required class="form-input"
+            placeholder="cth: BTS-Pusat ke Tower-Utara"
+            value="{{ row.nama_link if is_edit else '' }}">
+        </div>
+
+        <div>
+          <label class="form-label">Lokasi A (Sumber)</label>
+          <input type="text" name="lokasi_a" class="form-input"
+            placeholder="cth: BTS Pusat Kota"
+            value="{{ row.lokasi_a if is_edit else '' }}">
+        </div>
+
+        <div>
+          <label class="form-label">Lokasi B (Tujuan)</label>
+          <input type="text" name="lokasi_b" class="form-input"
+            placeholder="cth: Tower Desa Makmur"
+            value="{{ row.lokasi_b if is_edit else '' }}">
+        </div>
+
+        <div class="col-span-2">
+          <label class="form-label">Koordinat (opsional)</label>
+          <input type="text" name="koordinat" class="form-input"
+            placeholder="cth: -6.2088, 106.8456"
+            value="{{ row.koordinat if is_edit else '' }}">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Frekuensi -->
+    <div class="card p-6">
+      <p class="text-sm font-bold text-gray-700 mb-5">Konfigurasi Frekuensi</p>
+      <div class="grid grid-cols-3 gap-4">
+
+        <div>
+          <label class="form-label">Vendor</label>
+          <select name="vendor" class="form-input">
+            <option value="">— Pilih —</option>
+            {% for v in vendor_list %}
+            <option value="{{ v }}" {% if is_edit and row.vendor==v %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Band Frekuensi</label>
+          <select name="band" class="form-input">
+            <option value="">— Pilih —</option>
+            {% for b in band_list %}
+            <option value="{{ b }}" {% if is_edit and row.band==b %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">Channel Width</label>
+          <select name="channel_width" class="form-input">
+            <option value="">— Pilih —</option>
+            {% for w in width_list %}
+            <option value="{{ w }}" {% if is_edit and row.channel_width==w %}selected{% endif %}>{{ w }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-span-3">
+          <label class="form-label">Frekuensi (MHz)</label>
+          <input type="text" name="frekuensi" class="form-input font-mono"
+            placeholder="cth: 5180 atau 5180/5200 (TX/RX)"
+            value="{{ row.frekuensi if is_edit else '' }}">
+          <p class="text-xs text-gray-400 mt-1">Tulis satu frekuensi atau TX/RX dipisah garis miring</p>
+        </div>
+
+        <div>
+          <label class="form-label">SSID / Link Name</label>
+          <input type="text" name="ssid" class="form-input font-mono"
+            placeholder="cth: link-bts-pusat"
+            value="{{ row.ssid if is_edit else '' }}">
+        </div>
+
+        <div>
+          <label class="form-label">IP Management</label>
+          <input type="text" name="ip_mgmt" class="form-input font-mono"
+            placeholder="cth: 192.168.1.1"
+            value="{{ row.ip_mgmt if is_edit else '' }}">
+        </div>
+
+        <div>
+          <label class="form-label">Jarak (km)</label>
+          <input type="text" name="jarak_km" class="form-input"
+            placeholder="cth: 3.5"
+            value="{{ row.jarak_km if is_edit else '' }}">
+        </div>
+
+        <div>
+          <label class="form-label">SNMP Community</label>
+          <input type="text" name="snmp_community" class="form-input font-mono"
+            placeholder="public"
+            value="{{ row.snmp_community if is_edit else 'public' }}">
+          <p class="text-xs text-gray-400 mt-1">Untuk monitoring real-time via SNMP</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sinyal -->
+    <div class="card p-6">
+      <p class="text-sm font-bold text-gray-700 mb-5">Data Sinyal (opsional)</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Sinyal TX (dBm)</label>
+          <input type="text" name="sinyal_tx" class="form-input font-mono"
+            placeholder="cth: -60"
+            value="{{ row.sinyal_tx if is_edit else '' }}">
+        </div>
+        <div>
+          <label class="form-label">Sinyal RX (dBm)</label>
+          <input type="text" name="sinyal_rx" class="form-input font-mono"
+            placeholder="cth: -65"
+            value="{{ row.sinyal_rx if is_edit else '' }}">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sidebar kanan -->
+  <div class="space-y-6">
+
+    <div class="card p-6">
+      <p class="text-sm font-bold text-gray-700 mb-4">Status</p>
+      <div class="space-y-2">
+        {% for s in status_list %}
+        <label class="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-gray-50 transition">
+          <input type="radio" name="status" value="{{ s }}"
+            {% if is_edit and row.status==s %}checked{% elif not is_edit and s=='Aktif' %}checked{% endif %}
+            class="text-violet-600">
+          <span class="text-sm font-medium
+            {% if s=='Aktif' %}text-emerald-600
+            {% elif s=='Gangguan' %}text-red-600
+            {% elif s=='Maintenance' %}text-orange-500
+            {% else %}text-gray-500{% endif %}">
+            {{ s }}
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <label class="form-label">Catatan</label>
+      <textarea name="catatan" rows="5" class="form-input resize-none"
+        placeholder="Catatan tambahan, kondisi khusus, dll...">{{ row.catatan if is_edit else '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn-primary w-full py-3 justify-center">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      {% if is_edit %}Simpan Perubahan{% else %}Tambah Link{% endif %}
+    </button>
+
+  </div>
+</div>
+</form>
+{% endblock %}
